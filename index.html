@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Banking Management System — Frontend Only</title>
+<style>
+  :root {
+    --bg: #0f1220;
+    --panel: #171a2b;
+    --muted: #9aa3b2;
+    --text: #f2f4f8;
+    --accent: #5bd6ff;
+    --accent-2: #9d7dff;
+    --success: #3ecf8e;
+    --warn: #ffb020;
+    --danger: #ff5b6e;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    background: radial-gradient(1200px 600px at 10% 10%, #151a30 0%, #0b0e19 50%, #080a12 100%);
+    color: var(--text);
+  }
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(15,18,32,.7); backdrop-filter: saturate(120%) blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .bar {
+    max-width: 1200px; margin: 0 auto; padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    display: flex; gap: 12px; align-items: center; font-weight: 700; letter-spacing: .4px;
+  }
+  .logo svg { width: 28px; height: 28px; }
+  .pill { padding: 8px 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; color: var(--muted); }
+  .container { max-width: 1200px; margin: 18px auto; padding: 0 18px; }
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .card {
+    background: linear-gradient(180deg, rgba(23,26,43,.95), rgba(16,18,33,.95));
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .card h3 { margin: 0 0 10px; font-size: 18px; }
+  .card .body { padding: 16px; }
+  .col-4 { grid-column: span 4; }
+  .col-8 { grid-column: span 8; }
+  .col-6 { grid-column: span 6; }
+  .col-12 { grid-column: span 12; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.03); color: var(--text);
+    outline: none;
+  }
+  input::placeholder, textarea::placeholder { color: #7f8899; }
+  textarea { min-height: 120px; }
+  button {
+    padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08);
+    background: linear-gradient(180deg, #273052, #1d2442); color: var(--text);
+    cursor: pointer; transition: transform .08s ease, background .2s ease, box-shadow .2s ease;
+  }
+  button:hover { transform: translateY(-1px); background: linear-gradient(180deg, #2d3763, #212951); }
+  .btn-accent { background: linear-gradient(180deg, #5bd6ff, #3aa8d1); color: #061018; border-color: transparent; }
+  .btn-success { background: linear-gradient(180deg, #3ecf8e, #2aa96b); color: #04130d; border-color: transparent; }
+  .btn-danger { background: linear-gradient(180deg, #ff5b6e, #e7485d); color: #120407; border-color: transparent; }
+  .btn-warn { background: linear-gradient(180deg, #ffb020, #e1961a); color: #120b05; border-color: transparent; }
+  .tabs { display: flex; gap: 10px; border-bottom: 1px solid rgba(255,255,255,.08); padding: 8px; }
+  .tab { padding: 8px 12px; border-radius: 10px; cursor: pointer; color: var(--muted); }
+  .tab.active { color: var(--text); background: rgba(255,255,255,.06); }
+  .hidden { display: none !important; }
+  .list { display: grid; gap: 10px; }
+  .item { padding: 10px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color: #a7b1c2; }
+  .badge { padding: 6px 8px; border-radius: 999px; font-size: 12px; border: 1px solid rgba(255,255,255,.1); color: var(--muted); }
+  .badge.success { color: #0fdc8c; border-color: rgba(15,220,140,.3); }
+  .badge.warn { color: #ffb020; border-color: rgba(255,176,32,.3); }
+  .badge.danger { color: #ff5b6e; border-color: rgba(255,91,110,.3); }
+  .balance {
+    font-size: 28px; font-weight: 700; letter-spacing: .3px;
+    background: linear-gradient(90deg, #9d7dff 0%, #5bd6ff 50%, #3ecf8e 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .notice { font-size: 14px; color: var(--muted); }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .audit { max-height: 240px; overflow: auto; border: 1px dashed rgba(255,255,255,.08); border-radius: 12px; padding: 10px; }
+  .audit .line { font-size: 13px; padding: 4px 0; border-bottom: 1px dotted rgba(255,255,255,.06); }
+  .muted { color: var(--muted); }
+  .kbd { padding: 1px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.05); font-size: 12px; }
+  .center { display: flex; align-items: center; justify-content: center; }
+  .qr-preview { width: 100%; aspect-ratio: 16/9; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; background: rgba(255,255,255,.03); }
+  .statement { max-height: 240px; overflow: auto; }
+  .statement .row { justify-content: space-between; border-bottom: 1px dotted rgba(255,255,255,.06); padding: 6px 0; }
+  .fade-in { animation: fade .18s ease; }
+  @keyframes fade { from { opacity:0; transform: translateY(4px) } to { opacity:1; transform: translateY(0) } }
+  /* Responsive */
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: repeat(1, 1fr); }
+    .col-4, .col-6, .col-8, .col-12 { grid-column: span 1; }
+    .split { grid-template-columns: 1fr; }
+  }
+  img{
+    border-radius: 50px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">
+      <img src="FashionsVinsu.jpg" width="40px" height="40px">
+      <div>Vinsu Bank</div>
+      <span class="pill">Secure & Safe</span>
+    </div>
+    <div class="row">
+
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="grid">
+    <!-- Auth panel -->
+    <div class="card col-4" id="auth-card">
+      <div class="body">
+        <h3>Login</h3>
+        <div class="tabs">
+          <div class="tab active" data-role="customer">Customer</div>
+          <div class="tab" data-role="admin">Admin</div>
+        </div>
+        <div id="customer-login" class="fade-in">
+          <div class="row">
+            <input id="cust-username" placeholder="Customer username" />
+            <input id="cust-password" type="password" placeholder="Password" />
+          </div>
+          <div class="row">
+            <button class="btn-accent" id="cust-login-btn">Login</button>
+            <button id="prefill-demo" title="Quick demo credentials">Prefill demo</button>
+          </div>
+          <p class="notice">First login forces a password change for security.</p>
+        </div>
+        <div id="admin-login" class="hidden fade-in">
+          <div class="row">
+            <input id="admin-username" placeholder="Admin username" />
+            <input id="admin-password" placeholder="Password" />
+          </div>
+          <div class="row">
+            <button class="btn-success" id="admin-login-btn">Login as Admin</button>
+            <button id="fill-admin"></button
+          </div>
+          <p class="notice"></p>
+        </div>
+      </div>
+    </div>
+    <div class="card col-8" id="onboarding-card">
+      <div class="body">
+        <h3>Open an account</h3>
+        <div class="split">
+          <div>
+            <div class="row">
+              <input id="onb-fullname" placeholder="Full name" />
+              <input id="onb-email" placeholder="Email" />
+            </div>
+            <div class="row">
+              <select id="onb-type">
+                <option value="Savings">Savings</option>
+                <option value="Current">Current</option>
+                <option value="Salary">Salary</option>
+              </select>
+              <input id="onb-deposit" type="number" placeholder="Initial deposit (INR)" />
+            </div>
+            <div class="row">
+              <textarea id="onb-address" placeholder="Address"></textarea>
+            </div>
+            <div class="row">
+              <button class="btn-accent" id="submit-onboarding">Submit for approval</button>
+              <span class="badge warn">Pending admin approval</span>
+            </div>
+          </div>
+          <div>
+            <p class="notice">Admin reviews submissions, approves or rejects, and issues credentials. You’ll then be able to log in as a customer.</p>
+            <div class="audit" id="onb-status"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card col-12 hidden" id="admin-portal">
+      <div class="body">
+        <h3>Admin portal</h3>
+        <div class="tabs">
+          <div class="tab active" data-admin-tab="approvals">Approvals</div>
+          <div class="tab" data-admin-tab="customers">Customers</div>
+          <div class="tab" data-admin-tab="transactions">Transactions</div>
+          <div class="tab" data-admin-tab="audit">Audit log</div>
+        </div>
+        <div id="admin-approvals" class="fade-in">
+          <h4>Account opening requests</h4>
+          <div class="list" id="approval-list"></div>
+        </div>
+        <div id="admin-customers" class="hidden fade-in">
+          <h4>Customers</h4>
+          <div class="list" id="customer-list"></div>
+        </div>
+        <div id="admin-transactions" class="hidden fade-in">
+          <h4>All transactions</h4>
+          <div class="list" id="txn-list"></div>
+        </div>
+        <div id="admin-audit" class="hidden fade-in">
+          <h4>Audit log</h4>
+          <div class="audit" id="audit-log"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card col-12 hidden" id="customer-portal">
+      <div class="body">
+        <h3>Customer dashboard</h3>
+        <div class="tabs">
+          <div class="tab active" data-cust-tab="overview">Overview</div>
+          <div class="tab" data-cust-tab="transfer">Transfers</div>
+          <div class="tab" data-cust-tab="payments">Bill payments</div>
+          <div class="tab" data-cust-tab="qr">QR pay</div>
+          <div class="tab" data-cust-tab="cards">Cards</div>
+          <div class="tab" data-cust-tab="loans">Loans</div>
+          <div class="tab" data-cust-tab="statements">Statements</div>
+          <div class="tab" data-cust-tab="support">Support</div>
+          <div class="tab" data-cust-tab="profile">Profile</div>
+        </div>
+        <div id="cust-overview" class="fade-in">
+          <div class="grid">
+            <div class="col-4">
+              <div class="card">
+                <div class="body">
+                  <h3>Primary account</h3>
+                  <div class="balance" id="balance">₹0.00</div>
+                  <p class="notice mono" id="acct-number">Account: —</p>
+                  <div class="row">
+                    <button id="refresh-overview">Refresh</button>
+                    <span class="badge success" id="cust-status">Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-8">
+              <div class="card">
+                <div class="body">
+                  <h3>Recent activity</h3>
+                  <div class="statement" id="recent-activity"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="cust-transfer" class="hidden fade-in">
+          <h4>Make a transfer</h4>
+          <div class="grid">
+            <div class="col-6">
+              <div class="row">
+                <input id="transfer-to" placeholder="Beneficiary account number" />
+                <input id="transfer-amount" type="number" placeholder="Amount (INR)" />
+              </div>
+              <div class="row">
+                <input id="transfer-note" placeholder="Note (optional)" />
+              </div>
+              <div class="row">
+                <button class="btn-success" id="transfer-btn">Transfer</button>
+                <span class="badge warn">Instant internal transfer</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <h4>Your beneficiaries</h4>
+              <div class="list" id="benef-list"></div>
+            </div>
+          </div>
+        </div>
+        <div id="cust-payments" class="hidden fade-in">
+          <h4>Bill payments</h4>
+          <div class="grid">
+            <div class="col-6">
+              <div class="row">
+                <select id="bill-type">
+                  <option value="Electricity">Electricity</option>
+                  <option value="Water">Water</option>
+                  <option value="Internet">Internet</option>
+                  <option value="Mobile">Mobile</option>
+                </select>
+                <input id="bill-ref" placeholder="Reference number" />
+              </div>
+              <div class="row">
+                <input id="bill-amount" type="number" placeholder="Amount (INR)" />
+                <button class="btn-success" id="bill-pay-btn">Pay bill</button>
+              </div>
+              <p class="notice">Payments are recorded and visible in statements and admin transactions.</p>
+            </div>
+            <div class="col-6">
+              <h4>Saved billers</h4>
+              <div class="list" id="biller-list"></div>
+            </div>
+          </div>
+        </div>
+        <div id="cust-qr" class="hidden fade-in">
+          <h4>QR payments</h4>
+          <div class="split">
+            <div>
+              <div class="qr-preview center" id="qr-video-holder">
+                <video id="qr-video" autoplay playsinline style="max-width:100%; border-radius: 12px;"></video>
+              </div>
+              <div class="row">
+                <button id="qr-start">Start camera</button>
+                <button class="btn-warn" id="qr-stop">Stop camera</button>
+              </div>
+              <p class="notice">Simulated scanner: paste payload if detection fails.</p>
+            </div>
+            <div>
+              <input id="qr-payload" placeholder='QR payload (e.g., {"to":"ACCT123","amount":250,"note":"Tea"} )' />
+              <div class="row">
+                <button class="btn-success" id="qr-pay-btn">Pay via QR</button>
+                <span class="badge">Format: {"to": "acct", "amount": 100, "note": "optional"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="cust-cards" class="hidden fade-in">
+          <h4>Cards</h4>
+          <div class="grid">
+            <div class="col-6">
+              <div class="row">
+                <input id="card-name" placeholder="Name on card" />
+                <select id="card-type">
+                  <option value="Debit">Debit</option>
+                  <option value="Credit">Credit</option>
+                </select>
+              </div>
+              <div class="row">
+                <button class="btn-success" id="issue-card">Issue card</button>
+                <span class="badge success">Virtual card generated</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <h4>Your cards</h4>
+              <div class="list" id="card-list"></div>
+            </div>
+          </div>
+        </div>
+        <div id="cust-loans" class="hidden fade-in">
+          <h4>Loans</h4>
+          <div class="grid">
+            <div class="col-6">
+              <div class="row">
+                <select id="loan-type">
+                  <option value="Personal">Personal</option>
+                  <option value="Home">Home</option>
+                  <option value="Auto">Auto</option>
+                </select>
+                <input id="loan-amount" type="number" placeholder="Amount (INR)" />
+              </div>
+              <div class="row">
+                <input id="loan-tenure" type="number" placeholder="Tenure (months)" />
+                <button class="btn-warn" id="apply-loan">Apply</button>
+              </div>
+              <p class="notice">Flat demo interest: 10% APR (for demo calculations only).</p>
+            </div>
+            <div class="col-6">
+              <h4>Your loans</h4>
+              <div class="list" id="loan-list"></div>
+            </div>
+          </div>
+        </div>
+        <div id="cust-statements" class="hidden fade-in">
+          <h4>Statements</h4>
+          <div class="statement" id="statement"></div>
+          <div class="row">
+            <button id="export-statement">Export JSON</button>
+          </div>
+        </div>
+        <div id="cust-support" class="hidden fade-in">
+          <h4>Support</h4>
+          <div class="row">
+            <textarea id="support-msg" placeholder="Describe your issue"></textarea>
+          </div>
+          <div class="row">
+            <button class="btn-accent" id="support-send">Send to support</button>
+            <span class="badge">Ticket will show in admin audit</span>
+          </div>
+        </div>
+        <div id="cust-profile" class="hidden fade-in">
+          <h4>Profile</h4>
+          <div class="grid">
+            <div class="col-6">
+              <div class="row">
+                <input id="prof-email" placeholder="Email" />
+                <input id="prof-username" placeholder="Username" />
+              </div>
+              <div class="row">
+                <button id="prof-save">Save profile</button>
+                <span class="badge success">Local-only</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <h4>Password</h4>
+              <div class="row">
+                <input id="prof-old" type="password" placeholder="Old password" />
+                <input id="prof-new" type="password" placeholder="New password" />
+              </div>
+              <div class="row">
+                <button class="btn-warn" id="prof-change-pass">Change password</button>
+                <span class="badge warn">First login requires change</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ========= Storage & Utilities ========= */
+const DB_KEY = 'novabank.db.v1';
+
+const db = {
+  data: null,
+  load() {
+    const raw = localStorage.getItem(DB_KEY);
+    if (raw) {
+      try { this.data = JSON.parse(raw); } catch { this.data = null; }
+    }
+    if (!this.data) this.data = seed();
+    save();
+  }
+};
+function seed() {
+  const now = Date.now();
+  const acctNumber = genAccountNumber();
+  const demoUser = {
+    id: uid(),
+    username: 'demo',
+    password: 'demo123',
+    mustChangePassword: true,
+    email: 'demo@novabank.local',
+    account: {
+      number: acctNumber,
+      type: 'Savings',
+      balance: 25000,
+    },
+    beneficiaries: [],
+    billers: [],
+    cards: [],
+    loans: [],
+    activity: [
+      line('INIT', 'Account created', 0, acctNumber),
+      line('CREDIT', 'Initial funding', 25000, acctNumber),
+    ],
+    profile: { address: 'Sriperumbudur, TN', fullName: 'Demo User' }
+  };
+  return {
+    admin: { username: 'rhythm' }, // password is current time HHMM
+    customers: [demoUser],
+    pendingOnboarding: [],
+    transactions: [],
+    audit: [
+      `${ts()} System initialized`,
+    ],
+    supportTickets: []
+  };
+}
+function save() { localStorage.setItem(DB_KEY, JSON.stringify(db.data)); }
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function ts() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function currentTimeHHMM() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+function genAccountNumber() {
+  return 'ACCT' + Math.random().toString().slice(2, 10);
+}
+function line(type, note, amount, ref) {
+  return { id: uid(), type, note, amount, ref, at: ts() };
+}
+function addAudit(msg) {
+  db.data.audit.unshift(`${ts()} ${msg}`);
+  save(); renderAudit();
+}
+function pushTxn(t) {
+  db.data.transactions.unshift({ ...t, id: uid(), at: ts() });
+  save(); renderAdminTxns();
+}
+
+/* ========= UI State ========= */
+let activeRole = 'customer';
+let activeAdminTab = 'approvals';
+let activeCustTab = 'overview';
+let currentCustomer = null;
+
+/* ========= DOM ========= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* ========= Auth ========= */
+function setRole(role) {
+  activeRole = role;
+  $('#customer-login').classList.toggle('hidden', role !== 'customer');
+  $('#admin-login').classList.toggle('hidden', role !== 'admin');
+  $$('.tab[data-role]').forEach(el => el.classList.toggle('active', el.dataset.role === role));
+}
+$$('.tab[data-role]').forEach(el => el.addEventListener('click', () => setRole(el.dataset.role)));
+
+$('#fill-admin').addEventListener('click', () => {
+  $('#admin-username').value = 'rhythm';
+  $('#admin-password').value = currentTimeHHMM();
+});
+
+$('#admin-login-btn').addEventListener('click', () => {
+  const u = $('#admin-username').value.trim();
+  const p = $('#admin-password').value.trim();
+  if (u !== db.data.admin.username) return alert('Invalid admin username');
+  if (p !== currentTimeHHMM()) return alert('Admin password must match current time HHMM');
+  addAudit('Admin logged in');
+  $('#admin-portal').classList.remove('hidden');
+  $('#customer-portal').classList.add('hidden');
+  renderApprovals(); renderCustomers(); renderAdminTxns(); renderAudit();
+});
+
+$('#prefill-demo').addEventListener('click', () => {
+  $('#cust-username').value = 'demo';
+  $('#cust-password').value = 'demo123';
+});
+
+$('#cust-login-btn').addEventListener('click', () => {
+  const u = $('#cust-username').value.trim();
+  const p = $('#cust-password').value.trim();
+  const user = db.data.customers.find(x => x.username === u);
+  if (!user) return alert('User not found');
+  if (user.mustChangePassword) {
+    // Require new password immediately
+    if (p !== user.password) {
+      return alert('First login requires your initial password; then change it in Profile.');
+    }
+    alert('First login: go to Profile and change password now.');
+  } else {
+    if (p !== user.password) return alert('Incorrect password');
+  }
+  currentCustomer = user;
+  addAudit(`Customer "${user.username}" logged in`);
+  showCustomerPortal();
+});
+
+/* ========= Onboarding ========= */
+$('#submit-onboarding').addEventListener('click', () => {
+  const fullName = $('#onb-fullname').value.trim();
+  const email = $('#onb-email').value.trim();
+  const type = $('#onb-type').value;
+  const deposit = Number($('#onb-deposit').value || 0);
+  const address = $('#onb-address').value.trim();
+  if (!fullName || !email || !address) return alert('Please fill all fields');
+  const req = { id: uid(), fullName, email, type, deposit, address, at: ts(), status: 'Pending' };
+  db.data.pendingOnboarding.unshift(req);
+  save();
+  addAudit(`Onboarding submitted by ${fullName} (${email})`);
+  $('#onb-status').innerHTML = `<div class="line">Submitted: ${req.fullName} — ${req.email} — ${req.type} — ₹${deposit.toFixed(2)}</div>`;
+  renderApprovals();
+});
+
+/* ========= Admin Portal Rendering ========= */
+function renderApprovals() {
+  const list = $('#approval-list');
+  list.innerHTML = '';
+  if (db.data.pendingOnboarding.length === 0) {
+    list.innerHTML = '<div class="item"><span class="muted">No pending requests</span></div>';
+    return;
+  }
+  db.data.pendingOnboarding.forEach(req => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `
+      <div>
+        <div><strong>${req.fullName}</strong> <span class="mono">(${req.email})</span></div>
+        <div class="muted">Type: ${req.type} | Deposit: ₹${req.deposit.toFixed(2)} | Address: ${req.address}</div>
+      </div>
+      <div class="row">
+        <button class="btn-success" data-act="approve" data-id="${req.id}">Approve</button>
+        <button class="btn-danger" data-act="reject" data-id="${req.id}">Reject</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+  list.querySelectorAll('button').forEach(btn => btn.addEventListener('click', (e) => {
+    const id = e.target.dataset.id;
+    const act = e.target.dataset.act;
+    const req = db.data.pendingOnboarding.find(r => r.id === id);
+    if (!req) return;
+    if (act === 'approve') {
+      const acct = genAccountNumber();
+      const username = 'user_' + req.email.split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase();
+      const tempPass = 'welcome123';
+      const customer = {
+        id: uid(),
+        username, password: tempPass, mustChangePassword: true,
+        email: req.email,
+        account: { number: acct, type: req.type, balance: req.deposit },
+        beneficiaries: [], billers: [], cards: [], loans: [],
+        activity: [ line('INIT', 'Account opened', 0, acct), line('CREDIT', 'Initial deposit', req.deposit, acct) ],
+        profile: { address: req.address, fullName: req.fullName }
+      };
+      db.data.customers.unshift(customer);
+      db.data.pendingOnboarding = db.data.pendingOnboarding.filter(r => r.id !== id);
+      save();
+      addAudit(`Approved onboarding for ${req.fullName}, issued creds ${username}/${tempPass}, account ${acct}`);
+      renderApprovals(); renderCustomers();
+      alert(`Approved.\nCredentials:\nUsername: ${username}\nPassword: ${tempPass}\nAccount: ${acct}`);
+    } else {
+      db.data.pendingOnboarding = db.data.pendingOnboarding.filter(r => r.id !== id);
+      save(); addAudit(`Rejected onboarding for ${req.fullName}`);
+      renderApprovals();
+    }
+  }));
+}
+
+function renderCustomers() {
+  const list = $('#customer-list');
+  list.innerHTML = '';
+  db.data.customers.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `
+      <div>
+        <div><strong>${c.profile.fullName || c.username}</strong> <span class="mono">(${c.email})</span></div>
+        <div class="muted">Acct: ${c.account.number} | Balance: ₹${c.account.balance.toFixed(2)} | Type: ${c.account.type}</div>
+      </div>
+      <div class="row">
+        <button data-id="${c.id}" data-act="credit">Credit ₹1000</button>
+        <button data-id="${c.id}" data-act="debit">Debit ₹500</button>
+        <button class="btn-warn" data-id="${c.id}" data-act="resetpass">Reset password</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+  list.querySelectorAll('button').forEach(btn => btn.addEventListener('click', (e) => {
+    const id = e.target.dataset.id, act = e.target.dataset.act;
+    const c = db.data.customers.find(x => x.id === id);
+    if (!c) return;
+    if (act === 'credit') {
+      c.account.balance += 1000;
+      c.activity.unshift(line('CREDIT', 'Admin credit', 1000, c.account.number));
+      pushTxn({ type: 'CREDIT', from: 'ADMIN', to: c.account.number, amount: 1000, note: 'Admin credit' });
+      save(); addAudit(`Admin credited ₹1000 to ${c.username}`);
+    } else if (act === 'debit') {
+      if (c.account.balance < 500) return alert('Insufficient funds');
+      c.account.balance -= 500;
+      c.activity.unshift(line('DEBIT', 'Admin debit', 500, c.account.number));
+      pushTxn({ type: 'DEBIT', from: c.account.number, to: 'ADMIN', amount: 500, note: 'Admin debit' });
+      save(); addAudit(`Admin debited ₹500 from ${c.username}`);
+    } else if (act === 'resetpass') {
+      c.password = 'reset123'; c.mustChangePassword = true; save();
+      addAudit(`Admin reset password for ${c.username}`);
+      alert(`Password reset: reset123`);
+    }
+    renderCustomers();
+  }));
+}
+
+function renderAdminTxns() {
+  const list = $('#txn-list');
+  list.innerHTML = '';
+  if (db.data.transactions.length === 0) {
+    list.innerHTML = '<div class="item"><span class="muted">No transactions yet</span></div>';
+    return;
+  }
+  db.data.transactions.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `
+      <div>
+        <div><strong>${t.type}</strong> <span class="mono">${t.at}</span></div>
+        <div class="muted mono">${t.from} → ${t.to} | ₹${t.amount.toFixed(2)} | ${t.note || ''}</div>
+      </div>
+      <span class="badge ${t.type==='DEBIT'?'danger':'success'}">${t.type}</span>
+    `;
+    list.appendChild(el);
+  });
+}
+
+function renderAudit() {
+  const log = $('#audit-log');
+  log.innerHTML = db.data.audit.map(l => `<div class="line">${l}</div>`).join('');
+}
+
+/* ========= Customer Portal ========= */
+function showCustomerPortal() {
+  $('#customer-portal').classList.remove('hidden');
+  $('#admin-portal').classList.add('hidden');
+  renderOverview(); renderRecent(); renderStatement(); renderBeneficiaries(); renderBillers(); renderCards(); renderLoans();
+}
+
+function setCustTab(tab) {
+  activeCustTab = tab;
+  const map = {
+    overview: 'cust-overview',
+    transfer: 'cust-transfer',
+    payments: 'cust-payments',
+    qr: 'cust-qr',
+    cards: 'cust-cards',
+    loans: 'cust-loans',
+    statements: 'cust-statements',
+    support: 'cust-support',
+    profile: 'cust-profile'
+  };
+  Object.values(map).forEach(id => $(`#${id}`).classList.add('hidden'));
+  $(`#${map[tab]}`).classList.remove('hidden');
+  $$('.tab[data-cust-tab]').forEach(el => el.classList.toggle('active', el.dataset.custTab === tab));
+}
+$$('.tab[data-cust-tab]').forEach(el => el.addEventListener('click', () => setCustTab(el.dataset.custTab)));
+
+$('#refresh-overview').addEventListener('click', () => {
+  renderOverview(); renderRecent();
+});
+
+function renderOverview() {
+  if (!currentCustomer) return;
+  $('#balance').textContent = `₹${currentCustomer.account.balance.toFixed(2)}`;
+  $('#acct-number').textContent = `Account: ${currentCustomer.account.number} (${currentCustomer.account.type})`;
+  $('#cust-status').textContent = 'Active';
+}
+
+function renderRecent() {
+  if (!currentCustomer) return;
+  const box = $('#recent-activity');
+  const lines = currentCustomer.activity.slice(0, 10).map(a => `
+    <div class="row">
+      <span class="mono">${a.at}</span>
+      <span>${a.note}</span>
+      <span class="mono">₹${a.amount.toFixed(2)}</span>
+      <span class="badge ${a.type==='DEBIT'?'danger':'success'}">${a.type}</span>
+    </div>
+  `);
+  box.innerHTML = lines.join('');
+}
+
+function renderStatement() {
+  if (!currentCustomer) return;
+  const box = $('#statement');
+  box.innerHTML = currentCustomer.activity.map(a => `
+    <div class="row">
+      <span class="mono">${a.at}</span>
+      <span>${a.type} — ${a.note || ''}</span>
+      <span class="mono">Ref: ${a.ref}</span>
+      <span class="mono">₹${a.amount.toFixed(2)}</span>
+    </div>
+  `).join('');
+}
+
+/* ========= Transfers ========= */
+function renderBeneficiaries() {
+  if (!currentCustomer) return;
+  const list = $('#benef-list');
+  list.innerHTML = '';
+  currentCustomer.beneficiaries.forEach(b => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `<div>${b.name} <span class="mono">${b.account}</span></div>
+      <div class="row"><button data-act="send" data-acct="${b.account}">Send ₹500</button></div>`;
+    list.appendChild(el);
+  });
+  list.querySelectorAll('button').forEach(btn => btn.addEventListener('click', (e) => {
+    const to = e.target.dataset.acct;
+    doTransfer(to, 500, 'Quick send');
+  }));
+}
+$('#transfer-btn').addEventListener('click', () => {
+  const to = $('#transfer-to').value.trim();
+  const amt = Number($('#transfer-amount').value || 0);
+  const note = $('#transfer-note').value.trim();
+  if (!to || amt <= 0) return alert('Enter valid beneficiary and amount');
+  doTransfer(to, amt, note || 'Transfer');
+});
+function doTransfer(to, amount, note) {
+  const from = currentCustomer.account.number;
+  const target = db.data.customers.find(c => c.account.number === to);
+  if (!target) return alert('Beneficiary account not found');
+  if (currentCustomer.account.balance < amount) return alert('Insufficient funds');
+  currentCustomer.account.balance -= amount;
+  currentCustomer.activity.unshift(line('DEBIT', note, amount, to));
+  target.account.balance += amount;
+  target.activity.unshift(line('CREDIT', `Received from ${from}`, amount, from));
+  pushTxn({ type: 'TRANSFER', from, to, amount, note });
+  save(); renderOverview(); renderRecent(); renderStatement();
+  addAudit(`Transfer: ${from} → ${to} ₹${amount}`);
+  alert('Transfer successful');
+}
+
+/* ========= Payments ========= */
+function renderBillers() {
+  if (!currentCustomer) return;
+  const list = $('#biller-list');
+  list.innerHTML = '';
+  currentCustomer.billers.forEach(b => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `<div>${b.type} <span class="mono">${b.ref}</span></div>
+      <div class="row"><button data-ref="${b.ref}" data-type="${b.type}">Pay ₹200</button></div>`;
+    list.appendChild(el);
+  });
+  list.querySelectorAll('button').forEach(btn => btn.addEventListener('click', (e) => {
+    const { ref, type } = e.target.dataset;
+    payBill(type, ref, 200);
+  }));
+}
+$('#bill-pay-btn').addEventListener('click', () => {
+  const type = $('#bill-type').value;
+  const ref = $('#bill-ref').value.trim();
+  const amt = Number($('#bill-amount').value || 0);
+  if (!ref || amt <= 0) return alert('Enter valid ref and amount');
+  // Save biller if new
+  if (!currentCustomer.billers.find(b => b.ref === ref)) {
+    currentCustomer.billers.push({ type, ref });
+  }
+  payBill(type, ref, amt);
+});
+function payBill(type, ref, amount) {
+  if (currentCustomer.account.balance < amount) return alert('Insufficient funds');
+  currentCustomer.account.balance -= amount;
+  currentCustomer.activity.unshift(line('DEBIT', `${type} bill ${ref}`, amount, ref));
+  pushTxn({ type: 'BILL', from: currentCustomer.account.number, to: type.toUpperCase(), amount, note: `Bill ${ref}` });
+  save(); renderOverview(); renderRecent(); renderStatement(); renderBillers();
+  addAudit(`Bill payment: ${type} ${ref} by ${currentCustomer.username} ₹${amount}`);
+  alert('Bill paid');
+}
+
+/* ========= QR Pay (simulated) ========= */
+let mediaStream = null;
+$('#qr-start').addEventListener('click', async () => {
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    $('#qr-video').srcObject = mediaStream;
+    addAudit(`Camera started for QR preview by ${currentCustomer?.username || 'guest'}`);
+  } catch {
+    alert('Camera unavailable. Paste QR payload manually.');
+  }
+});
+$('#qr-stop').addEventListener('click', () => {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(t => t.stop());
+    mediaStream = null;
+    $('#qr-video').srcObject = null;
+    addAudit('Camera stopped for QR preview');
+  }
+});
+$('#qr-pay-btn').addEventListener('click', () => {
+  const raw = $('#qr-payload').value.trim();
+  if (!raw) return alert('Paste a QR payload JSON');
+  let payload;
+  try { payload = JSON.parse(raw); } catch { return alert('Invalid JSON payload'); }
+  const { to, amount, note } = payload;
+  if (!to || !amount || amount <= 0) return alert('Payload must include valid "to" and positive "amount"');
+  doTransfer(to, Number(amount), note || 'QR payment');
+});
+
+/* ========= Cards ========= */
+$('#issue-card').addEventListener('click', () => {
+  const name = $('#card-name').value.trim();
+  const type = $('#card-type').value;
+  if (!name) return alert('Enter name on card');
+  const card = {
+    id: uid(), type, name,
+    number: '4' + Math.random().toString().slice(2, 18),
+    expiry: `${String(new Date().getMonth()+1).padStart(2,'0')}/${String(new Date().getFullYear()+4).slice(2)}`,
+    cvv: String(Math.floor(Math.random()*900+100))
+  };
+  currentCustomer.cards.push(card);
+  save(); renderCards();
+  addAudit(`Card issued (${type}) to ${currentCustomer.username}`);
+  alert('Card issued');
+});
+function renderCards() {
+  if (!currentCustomer) return;
+  const list = $('#card-list');
+  list.innerHTML = '';
+  currentCustomer.cards.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `
+      <div>
+        <div><strong>${c.type}</strong> • ${c.name}</div>
+        <div class="mono">**** **** **** ${c.number.slice(-4)} • Exp ${c.expiry} • CVV ${c.cvv}</div>
+      </div>
+      <div class="row"><button data-id="${c.id}" class="btn-danger">Block</button></div>
+    `;
+    list.appendChild(el);
+  });
+  list.querySelectorAll('button').forEach(btn => btn.addEventListener('click', (e) => {
+    const id = e.target.dataset.id;
+    currentCustomer.cards = currentCustomer.cards.filter(x => x.id !== id);
+    save(); renderCards();
+    addAudit(`Card blocked for ${currentCustomer.username}`);
+  }));
+}
+
+/* ========= Loans ========= */
+$('#apply-loan').addEventListener('click', () => {
+  const type = $('#loan-type').value;
+  const amount = Number($('#loan-amount').value || 0);
+  const tenure = Number($('#loan-tenure').value || 0);
+  if (amount <= 0 || tenure <= 0) return alert('Enter valid amount and tenure');
+  const apr = 0.10;
+  const monthlyRate = apr/12;
+  const emi = (amount * monthlyRate) / (1 - Math.pow(1+monthlyRate, -tenure));
+  const loan = { id: uid(), type, amount, tenure, emi: Math.round(emi*100)/100, status: 'Approved' }; // auto-approve demo
+  currentCustomer.loans.push(loan);
+  currentCustomer.account.balance += amount;
+  currentCustomer.activity.unshift(line('CREDIT', `${type} loan disbursal`, amount, currentCustomer.account.number));
+  pushTxn({ type: 'LOAN', from: 'BANK', to: currentCustomer.account.number, amount, note: `${type} loan` });
+  save(); renderLoans(); renderOverview(); renderStatement(); renderRecent();
+  addAudit(`Loan approved: ${type} ₹${amount} for ${currentCustomer.username}`);
+  alert(`Loan approved. EMI: ₹${loan.emi}`);
+});
+function renderLoans() {
+  if (!currentCustomer) return;
+  const list = $('#loan-list');
+  list.innerHTML = '';
+  currentCustomer.loans.forEach(l => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `
+      <div>
+        <div><strong>${l.type}</strong> • ₹${l.amount.toFixed(2)} • ${l.tenure} months</div>
+        <div class="mono">EMI: ₹${l.emi} • Status: ${l.status}</div>
+      </div>
+      <div class="row"><button data-id="${l.id}" class="btn-warn">Pay EMI</button></div>
+    `;
+    list.appendChild(el);
+  });
+  list.querySelectorAll('button').forEach(btn => btn.addEventListener('click', (e) => {
+    const id = e.target.dataset.id;
+    const loan = currentCustomer.loans.find(x => x.id === id);
+    if (!loan) return;
+    const amount = loan.emi;
+    if (currentCustomer.account.balance < amount) return alert('Insufficient funds for EMI');
+    currentCustomer.account.balance -= amount;
+    currentCustomer.activity.unshift(line('DEBIT', `${loan.type} EMI`, amount, loan.id));
+    pushTxn({ type: 'EMI', from: currentCustomer.account.number, to: 'BANK', amount, note: `EMI ${loan.type}` });
+    save(); renderOverview(); renderLoans(); renderRecent(); renderStatement();
+    addAudit(`EMI paid: ${loan.type} ₹${amount} by ${currentCustomer.username}`);
+  }));
+}
+
+/* ========= Statements ========= */
+$('#export-statement').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(currentCustomer.activity, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `statement_${currentCustomer.username}.json`; a.click();
+  URL.revokeObjectURL(url);
+  addAudit(`Statement exported by ${currentCustomer.username}`);
+});
+
+/* ========= Support ========= */
+$('#support-send').addEventListener('click', () => {
+  const msg = $('#support-msg').value.trim();
+  if (!msg) return alert('Write your message');
+  db.data.supportTickets.unshift({ id: uid(), user: currentCustomer.username, msg, at: ts(), status: 'Open' });
+  addAudit(`Support ticket from ${currentCustomer.username}: ${msg.slice(0,80)}`);
+  $('#support-msg').value = '';
+  save();
+  alert('Support ticket submitted');
+});
+
+/* ========= Profile ========= */
+$('#prof-save').addEventListener('click', () => {
+  const email = $('#prof-email').value.trim();
+  const username = $('#prof-username').value.trim();
+  if (!email || !username) return alert('Email and username required');
+  const exists = db.data.customers.find(c => c.username === username && c.id !== currentCustomer.id);
+  if (exists) return alert('Username already taken');
+  currentCustomer.email = email;
+  currentCustomer.username = username;
+  save();
+  addAudit(`Profile updated for ${currentCustomer.username}`);
+  alert('Profile saved');
+});
+$('#prof-change-pass').addEventListener('click', () => {
+  const oldP = $('#prof-old').value;
+  const newP = $('#prof-new').value;
+  if (oldP !== currentCustomer.password) return alert('Old password incorrect');
+  if (!newP || newP.length < 6) return alert('New password must be 6+ chars');
+  currentCustomer.password = newP;
+  currentCustomer.mustChangePassword = false;
+  save();
+  addAudit(`Password changed for ${currentCustomer.username}`);
+  alert('Password changed');
+});
+
+/* ========= Admin Tabs ========= */
+function setAdminTab(tab) {
+  activeAdminTab = tab;
+  const map = {
+    approvals: 'admin-approvals',
+    customers: 'admin-customers',
+    transactions: 'admin-transactions',
+    audit: 'admin-audit',
+  };
+  Object.values(map).forEach(id => $(`#${id}`).classList.add('hidden'));
+  $(`#${map[tab]}`).classList.remove('hidden');
+  $$('.tab[data-admin-tab]').forEach(el => el.classList.toggle('active', el.dataset.adminTab === tab));
+}
+$$('.tab[data-admin-tab]').forEach(el => el.addEventListener('click', () => setAdminTab(el.dataset.adminTab)));
+
+/* ========= Init ========= */
+db.load();
+// Pre-fill profile fields when showing profile
+function hydrateProfileFields() {
+  if (!currentCustomer) return;
+  $('#prof-email').value = currentCustomer.email || '';
+  $('#prof-username').value = currentCustomer.username || '';
+}
+document.addEventListener('click', (e) => {
+  // Watch tab switches to hydrate profile
+  if (e.target.matches('.tab[data-cust-tab="profile"]')) {
+    hydrateProfileFields();
+  }
+});
+</script>
+</body>
+</html>
